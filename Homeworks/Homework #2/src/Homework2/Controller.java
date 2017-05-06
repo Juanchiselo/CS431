@@ -10,21 +10,17 @@ import java.util.ArrayList;
 
 public class Controller
 {
-    @FXML private TextField messageTextField;
-    @FXML private ListView<String> chatWindowListView;
     @FXML private Label statusLabel;
-    @FXML private TextField usernameTextField;
-    @FXML private Button createProcessData;
-    @FXML private Button startSimulation;
     @FXML private TextField processesTextField;
     @FXML private TextField timeSliceTextField;
     @FXML private TableView processInfoTableView;
     @FXML private TableColumn processIDColumn;
+    @FXML private TableColumn crColumn;
     @FXML private TableColumn stateColumn;
-    @FXML private TableColumn completionColumn;
+    @FXML private TableColumn completionPercentColumn;
+    @FXML private TableColumn completionTimeColumn;
     @FXML private TableColumn executionTimeColumn;
     @FXML private Slider speedSlider;
-    private ObservableList<Process> data;
 
 
 //    /**
@@ -50,11 +46,17 @@ public class Controller
         processIDColumn.setCellValueFactory(
                 new PropertyValueFactory<>("processID"));
 
+        crColumn.setCellValueFactory(
+                new PropertyValueFactory<>("criticalRegion"));
+
         stateColumn.setCellValueFactory(
                 new PropertyValueFactory<>("state"));
 
-        completionColumn.setCellValueFactory(
-                new PropertyValueFactory<>("completion"));
+        completionPercentColumn.setCellValueFactory(
+                new PropertyValueFactory<>("completionPercent"));
+
+        completionTimeColumn.setCellValueFactory(
+                new PropertyValueFactory<>("completionTime"));
 
         executionTimeColumn.setCellValueFactory(
                 new PropertyValueFactory<>("executionTime"));
@@ -67,7 +69,6 @@ public class Controller
         processInfoTableView.requestFocus();
         processInfoTableView.getSelectionModel().select(rowIndex);
         processInfoTableView.getFocusModel().focus(rowIndex);
-        //processInfoTableView.refresh();
     }
 
     public void blockRow(int rowIndex)

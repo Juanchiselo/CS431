@@ -10,6 +10,7 @@ public class ProcessSimulator extends Thread
     public volatile static boolean endThread = false;
     private ObservableList<Process> processes;
     private int quantumTime;
+    private long cpuTime;
 
     public ProcessSimulator(ObservableList<Process> processes, int quantumTime)
     {
@@ -22,19 +23,24 @@ public class ProcessSimulator extends Thread
     {
         int currentPID;
         int currentJobExecutionTime;
-        int currentQuantumTime;
+        int quantumTimeLeft;
         Process currentProcess;
         Integer[] currentJobs;
         boolean isCRLocked = false;
+        boolean isTurnDone = false;
+        cpuTime = 0;
         Queue<Process> processQueue = new LinkedList<>();
 
         for (Process process : processes)
             processQueue.add(process);
 
+        Platform.runLater(() ->
+                Main.controller.setStatus("Simulation is running."));
+
         while(!processQueue.isEmpty() && !endThread)
         {
             // Reset variables for next process.
-            currentQuantumTime = quantumTime;
+            quantumTimeLeft = quantumTime;
             currentProcess = processQueue.peek();
             currentPID = Integer.parseInt(currentProcess.getProcessID());
             currentJobs = currentProcess.getJobs();
@@ -46,14 +52,19 @@ public class ProcessSimulator extends Thread
                 Main.controller.selectRow(rowIndex));
 
             try {
-                Thread.sleep(500);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
+            //System.out.println("\nPID: " + currentPID);
+
             // Goes through the current process' jobs.
             for(int i = 0; i < currentJobs.length; i++)
             {
+                //System.out.println("Job: " + i);
+                //System.out.println("Quantum time left: " + quantumTimeLeft);
+
                 currentJobExecutionTime = currentJobs[i];
 
                 // Executes if the job is not done.
@@ -62,34 +73,13 @@ public class ProcessSimulator extends Thread
                     // Executes if the job is Non-Critical.
                     if(i % 2 == 0)
                     {
-                        currentJobExecutionTime = executeJob(currentProcess, i,
-                                currentJobExecutionTime, currentQuantumTime, processQueue);
+                        isTurnDone = executeJob(currentProcess, i,
+                                currentJobExecutionTime, quantumTimeLeft, processQueue);
 
-                        // If the current job is negative it means
-                        // the job was finished and we still have
-                        // some quantum time left.
-                        if (currentJobExecutionTime <= 0)
-                        {
-                            // TODO: Change these parameters so it's more readable.
-                            currentProcess.setExecutionTime(currentQuantumTime + currentJobExecutionTime);
-                            currentQuantumTime = -1 * currentJobExecutionTime;
-                            currentJobs[i] = 0;
-                            currentProcess.setCompletion(i);
-                            currentProcess.setState("Ready");
-
-                            // If this was the last job in the process and
-                            // it is done, then set the state of the process as done.
-                            if(i == currentJobs.length - 1)
-                                currentProcess.setState("Done");
-                        }
-                        else
-                        {
-                            currentProcess.setExecutionTime(currentQuantumTime);
-                            currentJobs[i] = currentJobExecutionTime;
-                            currentProcess.setState("Ready");
-                            processQueue.add(currentProcess);
+                        if(isTurnDone)
                             break;
-                        }
+                        else
+                            quantumTimeLeft -= currentJobExecutionTime;
                     }
                     // Executes if the job is Critical.
                     else
@@ -97,69 +87,40 @@ public class ProcessSimulator extends Thread
                         if(!isCRLocked)
                         {
                             isCRLocked = true;
-                            currentProcess.setCriticalRegion(true);
-                            currentJobExecutionTime = executeJob(currentJobExecutionTime, currentQuantumTime);
+                            currentProcess.setIsInCriticalRegion(true);
+                            isTurnDone = executeJob(currentProcess, i,
+                                    currentJobExecutionTime, quantumTimeLeft, processQueue);
 
-                            // If the current job is negative it means
-                            // the job was finished and we still have
-                            // some quantum time left.
-                            if (currentJobExecutionTime < 0)
+                            if(isTurnDone)
                             {
-                                currentProcess.setExecutionTime(currentQuantumTime + currentJobExecutionTime);
-                                currentQuantumTime = -1 * currentJobExecutionTime;
-                                currentJobs[i] = 0;
-                                currentProcess.setCompletion(i);
-                                isCRLocked = false;
-                                currentProcess.setCriticalRegion(false);
-                                currentProcess.setState("Ready");
-
-                                // If this was the last job in the process and
-                                // it is done, then set the state of the process as done.
-                                if(i == currentJobs.length - 1)
-                                    currentProcess.setState("Done");
+                                currentProcess.setState("Blocked");
+                                break;
                             }
                             else
                             {
-                                currentProcess.setExecutionTime(currentQuantumTime);
-                                currentJobs[i] = currentJobExecutionTime;
-                                currentProcess.setState("Blocked");
-                                processQueue.add(currentProcess);
-                                break;
+                                isCRLocked = false;
+                                currentProcess.setIsInCriticalRegion(false);
+                                quantumTimeLeft -= currentJobExecutionTime;
                             }
                         }
                         else
                         {
-                            if(currentProcess.getCriticalRegion())
+                            // If the current process is the locker.
+                            if(currentProcess.getIsInCriticalRegion())
                             {
-                                currentJobExecutionTime = executeJob(currentJobExecutionTime, currentQuantumTime);
+                                isTurnDone = executeJob(currentProcess, i,
+                                        currentJobExecutionTime, quantumTimeLeft, processQueue);
 
-                                // If the current job is negative it means
-                                // the job was finished and we still have
-                                // some quantum time left.
-                                if (currentJobExecutionTime < 0)
+                                if(isTurnDone)
                                 {
-                                    currentProcess.setExecutionTime(currentQuantumTime + currentJobExecutionTime);
-                                    currentQuantumTime = -1 * currentJobExecutionTime;
-                                    currentJobs[i] = 0;
-                                    currentProcess.setCompletion(i);
-                                    isCRLocked = false;
-                                    currentProcess.setCriticalRegion(false);
-                                    currentProcess.setState("Ready");
-
-                                    // If this was the last job in the process and
-                                    // it is done, then set the state of the process as done.
-                                    if(i == currentJobs.length - 1)
-                                        currentProcess.setState("Done");
+                                    currentProcess.setState("Blocked");
+                                    break;
                                 }
                                 else
                                 {
-                                    currentProcess.setExecutionTime(currentQuantumTime);
-                                    currentJobs[i] = currentJobExecutionTime;
-                                    currentProcess.setState("Blocked");
-                                    Platform.runLater(() ->
-                                            Main.controller.blockRow(rowIndex));
-                                    processQueue.add(currentProcess);
-                                    break;
+                                    isCRLocked = false;
+                                    currentProcess.setIsInCriticalRegion(false);
+                                    quantumTimeLeft -= currentJobExecutionTime;
                                 }
                             }
                             // Another process is in its critical region.
@@ -171,7 +132,6 @@ public class ProcessSimulator extends Thread
                             }
                         }
                     }
-
                 }
             }
 
@@ -188,9 +148,11 @@ public class ProcessSimulator extends Thread
                            int job, int quantumTimeLeft,
                            Queue<Process> processQueue)
     {
-        boolean isJobDone;
+        boolean isTurnDone;
 
+        //System.out.print(job + " - " + quantumTimeLeft);
         job -= quantumTimeLeft;
+        //System.out.println(" = " + job);
 
         // If the job is negative it means
         // the job was finished and we still have
@@ -198,27 +160,32 @@ public class ProcessSimulator extends Thread
         if (job <= 0)
         {
             process.setExecutionTime(quantumTimeLeft + job);
+            cpuTime += (quantumTimeLeft + job);
             quantumTimeLeft = -1 * job;
             process.getJobs()[jobID] = 0;
-            process.setCompletion(jobID);
+            process.setCompletionPercent(jobID);
             process.setState("Ready");
 
             // If this was the last job in the process and
             // it is done, then set the state of the process as done.
             if(jobID == process.getJobs().length - 1)
+            {
+                process.setCompletionTime(String.valueOf(cpuTime));
                 process.setState("Done");
+            }
 
-            isJobDone = true;
+            isTurnDone = false;
         }
         else
         {
+            cpuTime += quantumTimeLeft;
             process.setExecutionTime(quantumTimeLeft);
             process.getJobs()[jobID] = job;
             process.setState("Ready");
             processQueue.add(process);
-            isJobDone = false;
+            isTurnDone = true;
         }
 
-        return isJobDone;
+        return isTurnDone;
     }
 }

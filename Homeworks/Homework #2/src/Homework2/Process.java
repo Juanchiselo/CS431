@@ -6,8 +6,10 @@ public class Process
 {
     private final SimpleStringProperty processID;
     private final SimpleStringProperty state;
-    private final SimpleStringProperty completion;
+    private final SimpleStringProperty completionPercent;
     private final SimpleStringProperty executionTime;
+    private final SimpleStringProperty completionTime;
+    private final SimpleStringProperty criticalRegion;
     private boolean isInCriticalRegion = false;
     private Integer[] jobs;
 
@@ -17,8 +19,10 @@ public class Process
     {
         this.processID = new SimpleStringProperty(processID);
         this.state = new SimpleStringProperty(state);
-        this.completion = new SimpleStringProperty(completion);
+        this.completionPercent = new SimpleStringProperty(completion);
         this.executionTime = new SimpleStringProperty(executionTime);
+        this.completionTime = new SimpleStringProperty(String.valueOf(0));
+        this.criticalRegion = new SimpleStringProperty("");
         this.jobs = jobs;
     }
 
@@ -32,15 +36,15 @@ public class Process
         this.state.set(state);
     }
 
-    public String getCompletion()
+    public String getCompletionPercent()
     {
-        return completion.get();
+        return completionPercent.get();
     }
 
-    public void setCompletion(int lastJobCompleted)
+    public void setCompletionPercent(int lastJobCompleted)
     {
         float completionPercentage = (((float)lastJobCompleted + 1) / jobs.length) * 100;
-        this.completion.set(String.valueOf((int)completionPercentage) + "%");
+        this.completionPercent.set(String.valueOf((int)completionPercentage) + "%");
     }
 
     public String getExecutionTime()
@@ -75,14 +79,38 @@ public class Process
         this.jobs = jobs;
     }
 
-    public boolean getCriticalRegion()
+    public boolean getIsInCriticalRegion()
     {
         return isInCriticalRegion;
     }
 
-    public void setCriticalRegion(boolean isInCriticalRegion)
+    public void setIsInCriticalRegion(boolean isInCriticalRegion)
     {
+        setCriticalRegion(isInCriticalRegion);
         this.isInCriticalRegion = isInCriticalRegion;
     }
 
+    public String getCriticalRegion()
+    {
+        return criticalRegion.get();
+    }
+
+    public void setCriticalRegion(boolean isInCriticalRegion)
+    {
+        if(isInCriticalRegion)
+            criticalRegion.set("*");
+        else
+            criticalRegion.set("");
+
+    }
+
+    public String getCompletionTime()
+    {
+        return completionTime.get();
+    }
+
+    public void setCompletionTime(String completionTime)
+    {
+        this.completionTime.set(completionTime);
+    }
 }
