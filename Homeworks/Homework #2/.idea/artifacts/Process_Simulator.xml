@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Process Simulator">
+    <output-path>$PROJECT_DIR$/out/artifacts/Process Simulator - Homework #2 - Jose Juan Sandoval</output-path>
+    <root id="archive" name="Process Simulator.jar">
+      <element id="archive" name="JavaFXApp.jar">
+        <element id="module-output" name="Homework2" />
+        <element id="module-output" name="Homework #2" />
+      </element>
+    </root>
+  </artifact>
+</component>

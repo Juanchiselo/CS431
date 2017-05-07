@@ -101,7 +101,6 @@ public class Process
             criticalRegion.set("*");
         else
             criticalRegion.set("");
-
     }
 
     public String getCompletionTime()

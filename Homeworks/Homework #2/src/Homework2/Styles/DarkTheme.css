@@ -76,21 +76,7 @@
     -fx-padding: 1 0 0 0;
 }
 
-.menu {
-    -fx-text-fill: white;
-}
 
-.menu-bar {
-    -fx-background-color: #1d1d1d;
-    -fx-selection-bar: #1d1d1d;
-}
-
-.menu-bar .label {
-    -fx-font-size: 12pt;
-    -fx-font-family: "Segoe UI Light";
-    -fx-text-fill: white;
-    -fx-opacity: 0.9;
-}
 
 .text-field {
     -fx-font-size: 12pt;

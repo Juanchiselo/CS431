@@ -1,98 +1,185 @@
 package Homework2;
 
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
-import java.util.ArrayList;
-
 public class Controller
 {
     @FXML private Label statusLabel;
+    @FXML private Button startSimulationButton;
+    @FXML private Button stopSimulationButton;
+    @FXML private Button newProcessDataButton;
     @FXML private TextField processesTextField;
-    @FXML private TextField timeSliceTextField;
-    @FXML private TableView processInfoTableView;
-    @FXML private TableColumn processIDColumn;
-    @FXML private TableColumn crColumn;
-    @FXML private TableColumn stateColumn;
-    @FXML private TableColumn completionPercentColumn;
-    @FXML private TableColumn completionTimeColumn;
-    @FXML private TableColumn executionTimeColumn;
+    @FXML private TextField jobsTextField;
+    @FXML private TextField jobTimeTextField;
+    @FXML private TextField quantumTimeTextField;
     @FXML private Slider speedSlider;
+    @FXML private TableView<Process> lockVariableTableView;
+    @FXML private TableColumn<Process, String> LVprocessIDColumn;
+    @FXML private TableColumn<Process, String> LVcrColumn;
+    @FXML private TableColumn<Process, String> LVstateColumn;
+    @FXML private TableColumn<Process, String> LVcompletionPercentColumn;
+    @FXML private TableColumn<Process, String> LVcompletionTimeColumn;
+    @FXML private TableColumn<Process, String> LVexecutionTimeColumn;
+    @FXML private TableView<Process> strictAlternationTableView;
+    @FXML private TableColumn<Process, String> SAprocessIDColumn;
+    @FXML private TableColumn<Process, String> SAcrColumn;
+    @FXML private TableColumn<Process, String> SAstateColumn;
+    @FXML private TableColumn<Process, String> SAcompletionPercentColumn;
+    @FXML private TableColumn<Process, String> SAcompletionTimeColumn;
+    @FXML private TableColumn<Process, String> SAexecutionTimeColumn;
+    @FXML private CheckMenuItem lvCheckMenu;
+    @FXML private CheckMenuItem saCheckMenu;
+    @FXML private CheckMenuItem selectProcessCheckMenu;
+    private TableView<Process> table;
 
-
-//    /**
-//     * Switches between the Login and Chat windows.
-//     */
-//    public void switchWindows()
-//    {
-//        if(ChatClient.stage.getScene().equals(ChatClient.chatLoginScene))
-//        {
-//            ChatClient.stage.setScene(ChatClient.chatWindowScene);
-//            ChatClient.stage.setResizable(true);
-//        }
-//        else
-//        {
-//            ChatClient.stage.setScene(ChatClient.chatLoginScene);
-//            ChatClient.stage.setResizable(false);
-//        }
-//        ChatClient.stage.centerOnScreen();
-//    }
-
-    public void setTableView(ObservableList<Process> data)
+    /**
+     * Sets the data model for the TableViews.
+     * @param tableName - The name of the table to setup.
+     * @param data - The data to insert in the table.
+     */
+    public void setTableView(String tableName, ObservableList<Process> data)
     {
-        processIDColumn.setCellValueFactory(
-                new PropertyValueFactory<>("processID"));
+        if(tableName.equals("Lock Variable") && lvCheckMenu.isSelected())
+        {
+            LVprocessIDColumn.setCellValueFactory(
+                    new PropertyValueFactory<>("processID"));
 
-        crColumn.setCellValueFactory(
-                new PropertyValueFactory<>("criticalRegion"));
+            LVcrColumn.setCellValueFactory(
+                    new PropertyValueFactory<>("criticalRegion"));
 
-        stateColumn.setCellValueFactory(
-                new PropertyValueFactory<>("state"));
+            LVstateColumn.setCellValueFactory(
+                    new PropertyValueFactory<>("state"));
 
-        completionPercentColumn.setCellValueFactory(
-                new PropertyValueFactory<>("completionPercent"));
+            LVcompletionPercentColumn.setCellValueFactory(
+                    new PropertyValueFactory<>("completionPercent"));
 
-        completionTimeColumn.setCellValueFactory(
-                new PropertyValueFactory<>("completionTime"));
+            LVcompletionTimeColumn.setCellValueFactory(
+                    new PropertyValueFactory<>("completionTime"));
 
-        executionTimeColumn.setCellValueFactory(
-                new PropertyValueFactory<>("executionTime"));
+            LVexecutionTimeColumn.setCellValueFactory(
+                    new PropertyValueFactory<>("executionTime"));
 
-        processInfoTableView.setItems(data);
+            lockVariableTableView.setItems(data);
+        }
+        else if(tableName.equals("Strict Alternation") && saCheckMenu.isSelected())
+        {
+            SAprocessIDColumn.setCellValueFactory(
+                    new PropertyValueFactory<>("processID"));
+
+            SAcrColumn.setCellValueFactory(
+                    new PropertyValueFactory<>("criticalRegion"));
+
+            SAstateColumn.setCellValueFactory(
+                    new PropertyValueFactory<>("state"));
+
+            SAcompletionPercentColumn.setCellValueFactory(
+                    new PropertyValueFactory<>("completionPercent"));
+
+            SAcompletionTimeColumn.setCellValueFactory(
+                    new PropertyValueFactory<>("completionTime"));
+
+            SAexecutionTimeColumn.setCellValueFactory(
+                    new PropertyValueFactory<>("executionTime"));
+
+            strictAlternationTableView.setItems(data);
+        }
     }
 
-    public void selectRow(int rowIndex)
+    /**
+     * Selects the row specified.
+     * @param tableName - The name of the table where
+     *                  the row will be selected.
+     * @param rowIndex - The index of the row to be selected.
+     */
+    public void selectRow(String tableName, int rowIndex)
     {
-        processInfoTableView.requestFocus();
-        processInfoTableView.getSelectionModel().select(rowIndex);
-        processInfoTableView.getFocusModel().focus(rowIndex);
+        if(tableName.equals("Lock Variable"))
+            table = lockVariableTableView;
+        else
+            table = strictAlternationTableView;
+
+        table.getSelectionModel().select(rowIndex);
     }
 
-    public void blockRow(int rowIndex)
+    /**
+     * Updates the table with new data.
+     * @param tableName - The name of the table to update.
+     * @param data - The new data to update the table with.
+     */
+    public void updateTable(String tableName, ObservableList<Process> data)
     {
-//        Object blockedRow = processInfoTableView.getItems().get(rowIndex);
-//        blockedRow.setStyle("-fx-background-color");
+        if(tableName.equals("Lock Variable"))
+            table = lockVariableTableView;
+        else
+            table = strictAlternationTableView;
+
+        table.setItems(data);
+        table.refresh();
     }
 
-    public void updateTable(ObservableList<Process> processData)
+    /**
+     * Event handler for the Lock Variable CheckMenu component.
+     */
+    public void onLockVariable()
     {
-        processInfoTableView.setItems(processData);
-        processInfoTableView.refresh();
+        if(lvCheckMenu.isSelected())
+        {
+            lockVariableTableView.setVisible(true);
+            ProcessSimulator.lvSimulation = true;
+        }
+        else
+        {
+            lockVariableTableView.setVisible(false);
+            ProcessSimulator.lvSimulation = false;
+        }
     }
 
+    /**
+     * Event handler for the Strict Alternation CheckMenu component.
+     */
+    public void onStrictAlternation()
+    {
+        if(saCheckMenu.isSelected())
+        {
+            strictAlternationTableView.setVisible(true);
+            ProcessSimulator.saSimulation = true;
+        }
+        else
+        {
+            strictAlternationTableView.setVisible(false);
+            ProcessSimulator.saSimulation = false;
+        }
+    }
+
+    /**
+     * Event handler for the Select Running Process CheckMenu component.
+     */
+    public void onSelectRunningProcess()
+    {
+        if(selectProcessCheckMenu.isSelected())
+            ProcessSimulator.selectRow = true;
+        else
+            ProcessSimulator.selectRow = false;
+    }
+
+    /**
+     * Event handler for the "Start Simulation" button.
+     */
     public void onStartSimulation()
     {
-        String cpuTimeSliceString = timeSliceTextField.getText();
+        ProcessSimulator.endThread = false;
+        disableButtons(true);
+        String quantumTimeString = quantumTimeTextField.getText();
 
-        if (isInputValid(cpuTimeSliceString, "INTEGERS"))
+        if (isInputValid(quantumTimeString, "INTEGERS"))
         {
-            int cpuTimeSlice = Integer.parseInt(cpuTimeSliceString);
+            int quantumTime = Integer.parseInt(quantumTimeString);
 
-            if(cpuTimeSlice > 0)
-                Main.startSimulation(cpuTimeSlice);
+            if(quantumTime > 0)
+                Main.startSimulation(quantumTime);
             else
                 displayError("Invalid Input",
                     "CPU time slice should be a positive integer greater than 0.");
@@ -102,30 +189,77 @@ public class Controller
                     "CPU time slice should be a positive integer greater than 0.");
     }
 
-    public void onSliderDragged()
+    /**
+     * The event handler for the "Stop Simulation" button.
+     */
+    public void onStopSimulation()
     {
-        System.out.println(speedSlider.getValue());
+        setStatus("STATUS", "Stopping simulation.");
+        ProcessSimulator.endThread = true;
     }
 
+    /**
+     * Disables or enables certain parts of the GUI.
+     * @param disable - Whether to disable or enable
+     *                the GUI components.
+     */
+    public void disableButtons(boolean disable)
+    {
+        newProcessDataButton.setDisable(disable);
+        startSimulationButton.setDisable(disable);
+        stopSimulationButton.setDisable(!disable);
+        processesTextField.setDisable(disable);
+        jobsTextField.setDisable(disable);
+        jobTimeTextField.setDisable(disable);
+        quantumTimeTextField.setDisable(disable);
+    }
+
+    /**
+     * The event handler for the "Speed" slider.
+     * It updates the speed of the simulation in realtime.
+     */
+    public void onSliderDragged()
+    {
+        ProcessSimulator.simulationSpeed = (int)speedSlider.getValue();
+    }
+
+    /**
+     * The event handler for "New Process Data" button.
+     * It creates new process data files.
+     */
     public void onCreateProcessData()
     {
         String processesString = processesTextField.getText();
+        String jobsString = jobsTextField.getText();
+        String jobTimeString = jobTimeTextField.getText();
 
-        if (isInputValid(processesString, "INTEGERS"))
+        if (isInputValid(processesString, "INTEGERS")
+                && isInputValid(jobsString, "INTEGERS")
+                && isInputValid(jobTimeString, "INTEGERS"))
         {
             int numberOfProcesses = Integer.parseInt(processesString);
+            int jobsPerProcess = Integer.parseInt(jobsString);
+            int maxJobExecutionTime = Integer.parseInt(jobTimeString);
 
             if(numberOfProcesses >= 0 && numberOfProcesses <= 100)
-                Main.createProcessData(numberOfProcesses);
+                Main.createProcessData(numberOfProcesses,
+                        jobsPerProcess, maxJobExecutionTime);
             else
                 displayError("Number of Processes",
                         "You can only simulate a max of 100 processes.");
         }
         else
             displayError("Invalid Input",
-                    "Number of processes should be a positive integer.");
+                    "Number of processes/jobs/execution time "
+                    + "should be a positive integer.");
     }
 
+    /**
+     * Checks if a user given input is valid.
+     * @param input - The input given by the user.
+     * @param type - The type the input should be.
+     * @return - Returns whether is valid or not.
+     */
     private boolean isInputValid(String input, String type)
     {
         String regex = "";
@@ -139,7 +273,6 @@ public class Controller
 
         return input.matches(regex);
     }
-
 
     /**
      * Displays error messages in the form of alerts.
@@ -157,10 +290,16 @@ public class Controller
 
     /**
      * Displays the status messages located in the status bar.
-     * @param status - The status message.
+     * @param type - The type of the status message.
+     * @param message - The message to display.
      */
-    public void setStatus(String status)
+    public void setStatus(String type, String message)
     {
-        statusLabel.setText("Status: " + status);
+        if(type.equals("ERROR"))
+            statusLabel.setStyle("-fx-text-fill: red");
+        else
+            statusLabel.setStyle("-fx-text-fill: white");
+
+        statusLabel.setText(type + ": " + message);
     }
 }
