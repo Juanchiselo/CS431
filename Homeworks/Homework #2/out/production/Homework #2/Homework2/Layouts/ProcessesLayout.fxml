@@ -205,7 +205,7 @@
                </items></Menu>
             <Menu mnemonicParsing="false" text="Row Selection">
               <items>
-                  <CheckMenuItem fx:id="selectProcessCheckMenu" mnemonicParsing="false" onAction="#onSelectRunningProcess" style="-fx-text-fill: black;" text="Select Running Process" />
+                  <CheckMenuItem fx:id="selectProcessCheckMenu" mnemonicParsing="false" onAction="#onSelectRunningProcess" style="-fx-text-fill: black;" text="Select Running Process" selected="true"/>
               </items>
             </Menu>
         </menus>
